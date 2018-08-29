@@ -10,7 +10,7 @@ import UIKit
 
 class FaceViewController: UIViewController {
     
-    @IBOutlet var faceView: FaceView!{
+    @IBOutlet weak var faceView: FaceView!{
         didSet{
             faceView.addGestureRecognizer(UIPinchGestureRecognizer(target: faceView, action: #selector(FaceView.changeScale(_:))))
             
@@ -37,6 +37,37 @@ class FaceViewController: UIViewController {
         }
     }
     
+    private struct Animation {
+        static let shakeAngle = CGFloat(M_PI/6)
+        static let shakeDuration = 0.5
+    }
+    
+    @IBAction func headShake(_ sender: UITapGestureRecognizer) {
+        UIView.animate(withDuration: Animation.shakeDuration,
+        animations: {
+            self.faceView.transform = CGAffineTransform(rotationAngle: Animation.shakeAngle)
+        },
+        completion: { finished in
+            if finished{
+                UIView.animate(withDuration: Animation.shakeDuration,
+                animations: {
+                    self.faceView.transform = CGAffineTransform(rotationAngle: -Animation.shakeAngle)
+                },
+                completion: { finished in
+                    if finished{
+                        UIView.animate(withDuration: Animation.shakeDuration,
+                        animations: {
+                            self.faceView.transform = CGAffineTransform(rotationAngle: 0)
+                        },
+                        completion: { finished in
+                            if finished{
+                            }
+                        })
+                    }
+                })
+            }
+        })
+    }
     @objc func increaseHappiness()  {
         expression.mouth = expression.mouth.happierMouth()
     }
@@ -54,6 +85,8 @@ class FaceViewController: UIViewController {
     }
     
     private func updateFaceView(){
+        if faceView == nil{ return }
+        
         switch expression.eye {
         case .Open:
             faceView.eyesOpen = true
